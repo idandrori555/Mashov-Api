@@ -5,9 +5,7 @@
 git clone https://github.com/idandrori555/Mashov-Api.git
 ```
 
-```
-Get your school semel at https://web.mashov.info/api/schools
-```
+Get your school semel at ```https://web.mashov.info/api/schools```
 
 ## Example
 ```js
