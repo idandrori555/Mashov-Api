@@ -1,6 +1,6 @@
-# Simple Mashov Api Written in Typescript
+# ⚙ Mashov Api
 
-## Installation
+## 🛠 Installation
 ```bash
 git clone https://github.com/idandrori555/Mashov-Api.git
 ```
