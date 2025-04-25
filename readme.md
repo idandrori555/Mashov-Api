@@ -1,4 +1,4 @@
-# Simple Fetch Based Mashov API
+# Simple Mashov Api Written in Typescript
 
 ## Installation
 ```bash
