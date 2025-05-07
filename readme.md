@@ -41,12 +41,12 @@ deno task prod
 
 1. Build the Docker image
 ```bash
-docker build -t mashov-api .
+docker build --rm -t mashov-api .
 ```
 
 2. Run the container
 ```bash
-docker run -p 3000:3000 mashov-api
+docker run -p 3000:3000 -it mashov-api
 ```
 
 ## 🔌 API Endpoints
