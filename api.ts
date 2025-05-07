@@ -1,4 +1,9 @@
-import { LessonType, StudentEvent } from "./types.ts";
+import {
+  AbsenceSummary,
+  GradeRecord,
+  LessonType,
+  StudentEvent,
+} from "./types.ts";
 
 enum HEADERS {
   TOKEN_HEADER = "x-csrf-token",
@@ -64,7 +69,7 @@ export class Client {
   /**
    * Fetches the grades of the logged-in user from the Mashov API.
    */
-  getGrades = async () => {
+  getGrades = async (): Promise<GradeRecord[]> => {
     const gradesResponse = await fetch(
       `https://web.mashov.info/api/students/${this.USER_ID}/grades`,
       {
@@ -83,15 +88,14 @@ export class Client {
         method: "GET",
       }
     );
-    console.log(gradesResponse);
 
-    return await gradesResponse.json();
+    return (await gradesResponse.json()) as GradeRecord[];
   };
 
   /**
    * Fetches the behavior events of the logged-in user from the Mashov API.
    */
-  getBehaviour = async () => {
+  getBehaviour = async (): Promise<StudentEvent[]> => {
     const behaveResponse = await fetch(
       `https://web.mashov.info/api/students/${this.USER_ID}/behave`,
       {
@@ -111,7 +115,7 @@ export class Client {
       }
     );
 
-    return await behaveResponse.json();
+    return (await behaveResponse.json()) as StudentEvent[];
   };
 
   /**
@@ -163,7 +167,7 @@ export class Client {
    * Prints the percentage of absences in every subject.
    * @returns {Promise<void>}
    */
-  printAbsences = async (): Promise<void> => {
+  async printAbsences(): Promise<void> {
     const NOT_JUSTIFIED = -1;
     const HEADRUT_NOTICE = "העדרות";
 
@@ -207,5 +211,55 @@ export class Client {
       console.log(`Percentage of missing: ${percentage}%`);
       console.log("\n\n");
     });
-  };
+  }
+
+  async getAbsenceSummary(): Promise<AbsenceSummary[]> {
+    const NOT_JUSTIFIED = -1;
+    const HEADRUT_NOTICE = "העדרות";
+
+    const behaveTable = await this.getBehaviour();
+
+    const subjectAbsenceMap = new Map<
+      string,
+      { count: number; groupId: string }
+    >();
+
+    for (const notice of behaveTable) {
+      if (
+        notice.achvaName === HEADRUT_NOTICE &&
+        notice.justified === NOT_JUSTIFIED
+      ) {
+        const existing = subjectAbsenceMap.get(notice.subject);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          subjectAbsenceMap.set(notice.subject, {
+            count: 1,
+            groupId: notice.groupId,
+          });
+        }
+      }
+    }
+
+    const summaries: AbsenceSummary[] = await Promise.all(
+      Array.from(subjectAbsenceMap.entries()).map(
+        async ([subjectName, { count, groupId }]) => {
+          const lessons = await this.getLessons(groupId);
+          const totalLessons = lessons.length;
+          const percentage =
+            totalLessons === 0 ? 0 : (count * 100) / totalLessons;
+
+          return {
+            subjectName,
+            groupId,
+            unjustifiedAbsences: count,
+            totalLessons,
+            absencePercentage: parseFloat(percentage.toFixed(2)),
+          };
+        }
+      )
+    );
+
+    return summaries;
+  }
 }

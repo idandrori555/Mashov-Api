@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mashov Client UI</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+        padding: 2rem;
+      }
+      .hidden {
+        display: none;
+      }
+      .response-section {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+      }
+      th,
+      td {
+        text-align: center;
+        vertical-align: middle;
+      }
+      .login-card {
+        max-width: 800px;
+        margin: 0 auto 2rem;
+        padding: 2rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      }
+      table {
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center mb-4">Mashov Mock Client</h1>
+
+      <div class="login-card">
+        <form id="loginForm" class="mb-3">
+          <div class="row g-3 text-center">
+            <div class="col-md-3">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Semel"
+                id="semel"
+                required
+              />
+            </div>
+            <div class="col-md-3">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Year"
+                id="year"
+                required
+              />
+            </div>
+            <div class="col-md-3">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Username"
+                id="username"
+                required
+              />
+            </div>
+            <div class="col-md-3">
+              <input
+                type="password"
+                class="form-control"
+                placeholder="Password"
+                id="password"
+                required
+              />
+            </div>
+          </div>
+          <div class="text-center mt-3">
+            <button type="submit" class="btn btn-primary">Login</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="actions" class="hidden text-center">
+        <h5 class="text-success">Logged in! Ready for action.</h5>
+        <h4>Actions</h4>
+        <button class="btn btn-info me-2" onclick="getGrades()">ציונים</button>
+        <button class="btn btn-warning me-2" onclick="getAbsences()">
+          העדרויות
+        </button>
+        <!-- <button class="btn btn-danger me-2" onclick="getBehaviour()">
+          התנהגות
+        </button> -->
+      </div>
+
+      <div id="output" class="response-section text-center"></div>
+    </div>
+
+    <script>
+      let sessionId = "";
+
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const semel = document.getElementById("semel").value;
+          const year = document.getElementById("year").value;
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          const res = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ semel, year, username, password }),
+          });
+
+          const data = await res.json();
+          if (data.sessionId) {
+            sessionId = data.sessionId;
+            document.getElementById("actions").classList.remove("hidden");
+            document.getElementById("output").innerHTML = "";
+          } else {
+            renderOutput(data, true);
+          }
+        });
+
+      async function fetchData(endpoint) {
+        let url = `/${endpoint}/${sessionId}`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+        renderOutput(data, endpoint === "grades");
+      }
+
+      function getGrades() {
+        fetchData("grades");
+      }
+
+      function getAbsences() {
+        fetchData("absences");
+      }
+
+      // <!> DEPRECATED <!>
+      //   function getBehaviour() {
+      //     fetchData("behaviour");
+      //   }
+
+      function renderOutput(data, isGrades = false) {
+        const container = document.getElementById("output");
+        container.innerHTML = "";
+
+        if (typeof data === "string") {
+          container.innerHTML = data;
+          return;
+        }
+
+        if (!Array.isArray(data)) {
+          const pre = document.createElement("pre");
+          pre.textContent = JSON.stringify(data, null, 2);
+          pre.className = "bg-light p-3";
+          container.appendChild(pre);
+          return;
+        }
+
+        if (data.length === 0) {
+          container.innerHTML = "<p>No data available.</p>";
+          return;
+        }
+
+        const table = document.createElement("table");
+        table.className =
+          "table table-bordered table-hover table-sm text-center table-striped rounded";
+
+        const headers = isGrades
+          ? [
+              "year",
+              "grade",
+              "teacherName",
+              "groupName",
+              "eventDate",
+              "gradingEvent",
+              "gradeType",
+            ]
+          : Object.keys(data[0]);
+
+        const thead = document.createElement("thead");
+        thead.innerHTML = `<tr>${headers
+          .map((h) => `<th>${h}</th>`)
+          .join("")}</tr>`;
+
+        const tbody = document.createElement("tbody");
+        data.reverse().forEach((item) => {
+          const row = `<tr>${headers
+            .map((h) => {
+              let value = item[h];
+              if (h === "eventDate" && value) {
+                value = new Date(value).toLocaleDateString();
+              }
+              return `<td>${value !== undefined ? value : ""}</td>`;
+            })
+            .join("")}</tr>`;
+          tbody.innerHTML += row;
+        });
+
+        table.appendChild(thead);
+        table.appendChild(tbody);
+        container.appendChild(table);
+      }
+    </script>
+  </body>
+</html>
