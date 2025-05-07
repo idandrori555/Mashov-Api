@@ -8,4 +8,4 @@ RUN deno install
 
 EXPOSE 3000
 
-CMD [ "deno task prod" ]
+CMD [ "deno", "task", "prod" ]
