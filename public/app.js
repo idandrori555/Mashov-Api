@@ -25,7 +25,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 });
 
 async function fetchData(endpoint) {
-  let url = `/${endpoint}/${sessionId}`;
+  const url = `/${endpoint}/${sessionId}`;
 
   const res = await fetch(url);
   const data = await res.json();
@@ -40,11 +40,6 @@ function getAbsences() {
   fetchData("absences");
 }
 
-// <!> DEPRECATED <!>
-//   function getBehaviour() {
-//     fetchData("behaviour");
-//   }
-
 function renderOutput(data, isGrades = false) {
   const container = document.getElementById("output");
   container.innerHTML = "";
@@ -57,7 +52,7 @@ function renderOutput(data, isGrades = false) {
   if (!Array.isArray(data)) {
     const pre = document.createElement("pre");
     pre.textContent = JSON.stringify(data, null, 2);
-    pre.className = "bg-light p-3";
+    pre.className = "bg-dark p-3";
     container.appendChild(pre);
     return;
   }
@@ -104,3 +99,6 @@ function renderOutput(data, isGrades = false) {
   table.appendChild(tbody);
   container.appendChild(table);
 }
+
+globalThis.getGrades = getGrades;
+globalThis.getAbsences = getAbsences;
