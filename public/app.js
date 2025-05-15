@@ -25,7 +25,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 });
 
 async function fetchData(endpoint) {
-  let url = `/${endpoint}/${sessionId}`;
+  const url = `/${endpoint}/${sessionId}`;
 
   const res = await fetch(url);
   const data = await res.json();
@@ -39,11 +39,6 @@ function getGrades() {
 function getAbsences() {
   fetchData("absences");
 }
-
-// <!> DEPRECATED <!>
-//   function getBehaviour() {
-//     fetchData("behaviour");
-//   }
 
 function renderOutput(data, isGrades = false) {
   const container = document.getElementById("output");
@@ -104,3 +99,6 @@ function renderOutput(data, isGrades = false) {
   table.appendChild(tbody);
   container.appendChild(table);
 }
+
+globalThis.getGrades = getGrades;
+globalThis.getAbsences = getAbsences;
