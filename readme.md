@@ -1,6 +1,12 @@
 # 🎓 Mashov API
 A modern REST API wrapper for the Mashov school management system, built with Deno and Express.
 
+
+## THIS PROJECT IS DEPRECATED!
+Updated version
+[here](https://github.com/idandrori555/Mashov)
+
+
 ## 📋 Features
 - ✨ REST API endpoints for Mashov functionality
 - 📊 Grade retrieval and statistics
@@ -72,9 +78,6 @@ Content-Type: application/json
 
 ## 💻 Web Interface
 Access the web interface at `http://localhost:3000` after starting the server.
-
-## ⭐ Show your support
-Give a ⭐️ if this project helped you!
 
 ## 📝 Notes
 - Make sure to keep your credentials secure
